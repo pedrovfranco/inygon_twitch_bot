@@ -1,6 +1,7 @@
 const tmi = require('tmi.js');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
+const path = require('path');
 
 require('dotenv').config();
 
@@ -151,7 +152,7 @@ async function getDragonCoins() {
 async function saveCookies() {
     try {
         const cookies = await page.cookies('https://play.inygon.pt/', 'https://twitch.tv');
-        fs.writeFileSync('./cookies.json', JSON.stringify(cookies, null, 2));
+        fs.writeFileSync(path.join(__dirname, './cookies.json'), JSON.stringify(cookies, null, 2));
         loggedIn = true;
     
     }
@@ -164,7 +165,7 @@ async function importCookies() {
 
     let result;
     try {
-        const cookiesString = fs.readFileSync('./cookies.json');
+        const cookiesString = fs.readFileSync(path.join(__dirname, './cookies.json'));
         const cookies = JSON.parse(cookiesString);
         await page.setCookie(...cookies);    
         result = true;
