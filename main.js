@@ -41,6 +41,27 @@ function joinTwitch() {
     });
 }
 
+async function runBrowser() {
+    
+    await launchBrowser(true);
+
+    await page.goto('https://play.inygon.pt/', {'waitUntil': 'networkidle0'});
+
+    await checkInygonLogin(page);
+
+    if (!loggedIn) {
+        console.log("Not logged in!");
+        await launchBrowser(false);
+        await loginToInygon(page);
+    }
+    else {
+        await getDragonCoins();
+        await startPeriodicDragonCoinPrint();    
+    }
+
+}
+
+
 async function launchBrowser(headless) {
    
     if (browser !== undefined) {
@@ -73,26 +94,6 @@ async function launchBrowser(headless) {
     
     await importCookies(page);
 }
-
-async function runBrowser() {
-    
-    await launchBrowser(true)
-
-    await page.goto('https://play.inygon.pt/', {'waitUntil': 'networkidle0'});
-
-    await checkInygonLogin(page);
-
-    if (!loggedIn) {
-        await launchBrowser(false);
-        await loginToInygon(page);
-    }
-    else {
-        await getDragonCoins();
-        await startPeriodicDragonCoinPrint();    
-    }
-
-}
-
 
 async function checkInygonLogin() {
     loggedIn = (await page.$('#top-cart > h6 > a') === null);
