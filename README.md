@@ -10,6 +10,6 @@
 		TWITCH_CHANNELS = ["inygontv1", "inygontv2", "inygontv3"]
 		TWITCH_OAUTH_TOKEN = 
 		TWITCH_PASSWORD =
-	- run with the command: node main.js
+	- run with the command: npm start
 	
 	
