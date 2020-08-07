@@ -2,6 +2,7 @@ const tmi = require('tmi.js');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
+const notifier = require('node-notifier');
 
 require('dotenv').config();
 
@@ -13,6 +14,7 @@ console.log('channels: ' + JSON.stringify(JSON.parse(process.env.TWITCH_CHANNELS
 let loggedIn = false;
 let browser;
 let page;
+var dragonCoins = 0;
 
 // Twitch client
 let client;
@@ -56,7 +58,7 @@ async function runBrowser() {
     }
     else {
         await getDragonCoins();
-        await startPeriodicDragonCoinPrint();    
+        await startPeriodicLoop();    
     }
 
 }
@@ -129,15 +131,15 @@ async function checkForInygonPage() {
         await launchBrowser(true);
 
         await getDragonCoins();
-        await startPeriodicDragonCoinPrint();    
+        await startPeriodicLoop();    
     }
 }
 
-async function startPeriodicDragonCoinPrint() {
-    setInterval(getDragonCoins,  10 * 60 * 1000);
+async function startPeriodicLoop() {
+    setInterval(getDragonCoins,  10 * 60 * 1000); //prints current amount of dragonCoins every 60s
 }
 
-async function getDragonCoins() {
+async function getDragonCoins() { // Prints and returns the amount of DragonCoins
     await page.goto('https://play.inygon.pt/', {'waitUntil': 'networkidle0'});
 
     let coinsElementSelector = '#top-account > ul > a:nth-child(1)';
@@ -147,7 +149,20 @@ async function getDragonCoins() {
     let value = await page.evaluate(element => element.textContent, element);
     let coins = value.replace('Perfil Dragon Coins: ', '');
 
+    if(dragonCoins > coins){ 
+
+        notifier.notify({
+            title: 'Inygon Twitch Bot',
+            message: 'Some Inygon channel is LIVE!'
+        });
+
+        console.log("Inygon is LIVE!");
+    }
+
+    dragonCoins = coins;
+
     console.log('Dragon Coins: ' + coins);
+
 }
 
 async function saveCookies() {
@@ -183,6 +198,7 @@ async function importCookies() {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
+
 
 function main() {
     joinTwitch();
