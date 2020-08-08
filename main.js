@@ -191,27 +191,49 @@ async function getDragonCoins() { // Prints and returns the amount of DragonCoin
     let value = await page.evaluate(element => element.textContent, element);
     let coins = value.replace('Perfil Dragon Coins: ', '');
 
-    if(initialRun){
-    	prevCoins = coins;
-    	initialRun = false;
-    }
 
-   if(!isLive && (coins > prevCoins)){ 
+    if (process.env.NOTIFY === "true") {
 
-        notifier.notify({
-            title: 'Inygon Twitch Bot',
-            message: 'Some Inygon channel is LIVE!',
-            icon: path.join(__dirname, 'notification_icon.jpg'),
-            sound: false
-        });
+        console.log("NOTIFY");
 
-        console.log("Inygon is LIVE!");
-        isLive = true;
+        if (initialRun) {
+            prevCoins = coins;
+            initialRun = false;
+        }
+
+        if (coins > prevCoins) {
+
+            if (!isLive) {
+                notifier.notify({
+                    title: 'Inygon Twitch Bot',
+                    message: 'Some Inygon channel is LIVE!',
+                    icon: path.join(__dirname, 'notification_icon.jpg'),
+                    sound: false
+                });
+
+                console.log("Inygon is LIVE!");
+                isLive = true;
+            }
+           
+        }
+        else {
+            isLive = false;
+        }
     }
 
     let hour = date.getHours(); 
     let minute = date.getMinutes();
-    console.log('[%d:%d] Dragon Coins: ' + coins, hour, minute);
+
+    // Fix time formatting
+    if (hour < 10) {
+        hour = '0' + hour;
+    }
+
+    if (minute < 10) {
+        minute = '0' + minute;
+    }
+
+    console.log(`[${hour}:${minute}] Dragon Coins: ${coins}`);
 
 }
 
