@@ -14,7 +14,11 @@ console.log('channels: ' + JSON.stringify(JSON.parse(process.env.TWITCH_CHANNELS
 let loggedIn = false;
 let browser;
 let page;
-var dragonCoins = 0;
+let date = new Date();
+
+var prevCoins = 0;
+var isLive = false
+initialRun = true;
 
 // Twitch client
 let client;
@@ -57,7 +61,7 @@ async function runBrowser() {
         await loginToInygon(page);
     }
     else {
-        await getDragonCoins();
+        await getprevCoins();
         await startPeriodicLoop();    
     }
 
@@ -130,16 +134,16 @@ async function checkForInygonPage() {
 
         await launchBrowser(true);
 
-        await getDragonCoins();
+        await getprevCoins();
         await startPeriodicLoop();    
     }
 }
 
 async function startPeriodicLoop() {
-    setInterval(getDragonCoins,  10 * 60 * 1000); //prints current amount of dragonCoins every 60s
+    setInterval(getprevCoins,  10 * 60 * 1000); //prints current amount of prevCoins every 10m
 }
 
-async function getDragonCoins() { // Prints and returns the amount of DragonCoins
+async function getprevCoins() { // Prints and returns the amount of DragonCoins
     await page.goto('https://play.inygon.pt/', {'waitUntil': 'networkidle0'});
 
     let coinsElementSelector = '#top-account > ul > a:nth-child(1)';
@@ -149,19 +153,27 @@ async function getDragonCoins() { // Prints and returns the amount of DragonCoin
     let value = await page.evaluate(element => element.textContent, element);
     let coins = value.replace('Perfil Dragon Coins: ', '');
 
-    if(dragonCoins > coins){ 
+    if(initialRun){
+    	prevCoins = coins;
+    	initialRun = false;
+    }
+
+   if(!isLive && (coins > prevCoins)){ 
 
         notifier.notify({
             title: 'Inygon Twitch Bot',
-            message: 'Some Inygon channel is LIVE!'
+            message: 'Some Inygon channel is LIVE!',
+            icon: path.join(__dirname, 'notification_icon.jpg'),
+            sound: false
         });
 
         console.log("Inygon is LIVE!");
+        isLive = true;
     }
 
-    dragonCoins = coins;
-
-    console.log('Dragon Coins: ' + coins);
+    let hour = date.getHours(); 
+    let minute = date.getMinutes();
+    console.log('[%d:%d] Dragon Coins: ' + coins, hour, minute);
 
 }
 

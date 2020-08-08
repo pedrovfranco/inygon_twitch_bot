@@ -11,5 +11,7 @@
 		TWITCH_OAUTH_TOKEN = 
 		TWITCH_PASSWORD =
 	- run with the command: npm start
+
+	NOTE: CTRL + C to Stop
 	
 	
