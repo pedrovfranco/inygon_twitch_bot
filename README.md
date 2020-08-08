@@ -6,6 +6,7 @@ Twtich Bot that makes user online in selected livestreams.
 - Install node.js: https://nodejs.org/en/
 - Open terminal in folder
 - Run command: npm install
+- Rename .env_example to .env
 
 Fill .env file with the following:
 
