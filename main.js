@@ -2,22 +2,64 @@ const tmi = require('tmi.js');
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const path = require('path');
+const notifier = require('node-notifier');
 
 require('dotenv').config();
-
-console.log('username: ' + process.env.TWITCH_USERNAME);
-console.log('channels: ' + JSON.stringify(JSON.parse(process.env.TWITCH_CHANNELS), ' ', 0));
-// console.log(process.env.TWITCH_OAUTH_TOKEN);
-
 
 let loggedIn = false;
 let browser;
 let page;
+let date = new Date();
+
+let prevCoins = 0;
+let isLive = false
+initialRun = true;
 
 // Twitch client
 let client;
 
 function joinTwitch() {
+    
+    let failed = false;
+    let channels;
+
+    if (process.env.TWITCH_USERNAME === undefined || process.env.TWITCH_USERNAME === "") {
+        failed = true;
+        console.log("Twitch username missing in .env!");
+    }
+    
+    if (process.env.TWITCH_OAUTH_TOKEN === undefined || process.env.TWITCH_OAUTH_TOKEN === "") {
+        failed = true;
+        console.log("Twitch OAuth token missing in .env!");
+    }
+
+    if (process.env.TWITCH_PASSWORD === undefined || process.env.TWITCH_PASSWORD === "") {
+        failed = true;
+        console.log("Twitch password missing in .env!");
+    }
+
+    if (process.env.TWITCH_CHANNELS === undefined || process.env.TWITCH_CHANNELS === "") {
+        failed = true;
+        console.log("Twitch channels missing in .env!");
+    }
+    else {
+        try {
+            channels = JSON.parse(process.env.TWITCH_CHANNELS);
+        }
+        catch (exception) {
+            failed = true;
+            console.log("Failed to parse twitch channel to from JSON!");
+        }
+    }
+
+    if (failed) {
+        console.log("\nError occured, exiting...");
+        return;
+    }
+
+    console.log('username: ' + process.env.TWITCH_USERNAME);
+    console.log('channels: ' + JSON.stringify(channels, ' ', 0));
+
     client = new tmi.Client({
         options: { debug: false  },
         connection: {
@@ -28,7 +70,7 @@ function joinTwitch() {
             username: process.env.TWITCH_USERNAME,
             password: process.env.TWITCH_OAUTH_TOKEN
         },
-        channels: JSON.parse(process.env.TWITCH_CHANNELS)
+        channels: channels
     });
     
     client.connect().catch(console.error);
@@ -39,6 +81,8 @@ function joinTwitch() {
         //     client.say(channel, `@${tags.username}, heya!`);
         // }
     });
+
+    runBrowser();
 }
 
 async function runBrowser() {
@@ -56,7 +100,7 @@ async function runBrowser() {
     }
     else {
         await getDragonCoins();
-        await startPeriodicDragonCoinPrint();    
+        await startPeriodicLoop();    
     }
 
 }
@@ -129,15 +173,15 @@ async function checkForInygonPage() {
         await launchBrowser(true);
 
         await getDragonCoins();
-        await startPeriodicDragonCoinPrint();    
+        await startPeriodicLoop();    
     }
 }
 
-async function startPeriodicDragonCoinPrint() {
-    setInterval(getDragonCoins,  10 * 60 * 1000);
+async function startPeriodicLoop() {
+    setInterval(getDragonCoins,  10 * 60 * 1000); //prints current amount of prevCoins every 10m
 }
 
-async function getDragonCoins() {
+async function getDragonCoins() { // Prints and returns the amount of DragonCoins
     await page.goto('https://play.inygon.pt/', {'waitUntil': 'networkidle0'});
 
     let coinsElementSelector = '#top-account > ul > a:nth-child(1)';
@@ -147,7 +191,50 @@ async function getDragonCoins() {
     let value = await page.evaluate(element => element.textContent, element);
     let coins = value.replace('Perfil Dragon Coins: ', '');
 
-    console.log('Dragon Coins: ' + coins);
+
+    if (process.env.NOTIFY === "true") {
+
+        console.log("NOTIFY");
+
+        if (initialRun) {
+            prevCoins = coins;
+            initialRun = false;
+        }
+
+        if (coins > prevCoins) {
+
+            if (!isLive) {
+                notifier.notify({
+                    title: 'Inygon Twitch Bot',
+                    message: 'Some Inygon channel is LIVE!',
+                    icon: path.join(__dirname, 'notification_icon.jpg'),
+                    sound: false
+                });
+
+                console.log("Inygon is LIVE!");
+                isLive = true;
+            }
+           
+        }
+        else {
+            isLive = false;
+        }
+    }
+
+    let hour = date.getHours(); 
+    let minute = date.getMinutes();
+
+    // Fix time formatting
+    if (hour < 10) {
+        hour = '0' + hour;
+    }
+
+    if (minute < 10) {
+        minute = '0' + minute;
+    }
+
+    console.log(`[${hour}:${minute}] Dragon Coins: ${coins}`);
+
 }
 
 async function saveCookies() {
@@ -184,9 +271,9 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+
 function main() {
     joinTwitch();
-    runBrowser();
 }
 
 main();
