@@ -9,7 +9,6 @@ require('dotenv').config();
 let loggedIn = false;
 let browser;
 let page;
-let date = new Date();
 
 let prevCoins = 0;
 let isLive = false
@@ -189,8 +188,6 @@ async function getDragonCoins() { // Prints and returns the amount of DragonCoin
 
     if (process.env.NOTIFY === "true") {
 
-        console.log("NOTIFY");
-
         if (initialRun) {
             prevCoins = coins;
             initialRun = false;
@@ -216,6 +213,7 @@ async function getDragonCoins() { // Prints and returns the amount of DragonCoin
         }
     }
 
+    let date = new Date();
     let hour = date.getHours(); 
     let minute = date.getMinutes();
 
