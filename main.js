@@ -33,11 +33,6 @@ function joinTwitch() {
         console.log("Twitch OAuth token missing in .env!");
     }
 
-    if (process.env.TWITCH_PASSWORD === undefined || process.env.TWITCH_PASSWORD === "") {
-        failed = true;
-        console.log("Twitch password missing in .env!");
-    }
-
     if (process.env.TWITCH_CHANNELS === undefined || process.env.TWITCH_CHANNELS === "") {
         failed = true;
         console.log("Twitch channels missing in .env!");
