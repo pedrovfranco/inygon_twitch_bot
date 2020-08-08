@@ -61,7 +61,7 @@ async function runBrowser() {
         await loginToInygon(page);
     }
     else {
-        await getprevCoins();
+        await getDragonCoins();
         await startPeriodicLoop();    
     }
 
@@ -134,16 +134,16 @@ async function checkForInygonPage() {
 
         await launchBrowser(true);
 
-        await getprevCoins();
+        await getDragonCoins();
         await startPeriodicLoop();    
     }
 }
 
 async function startPeriodicLoop() {
-    setInterval(getprevCoins,  10 * 60 * 1000); //prints current amount of prevCoins every 10m
+    setInterval(getDragonCoins,  10 * 60 * 1000); //prints current amount of prevCoins every 10m
 }
 
-async function getprevCoins() { // Prints and returns the amount of DragonCoins
+async function getDragonCoins() { // Prints and returns the amount of DragonCoins
     await page.goto('https://play.inygon.pt/', {'waitUntil': 'networkidle0'});
 
     let coinsElementSelector = '#top-account > ul > a:nth-child(1)';
