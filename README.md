@@ -1,17 +1,25 @@
 # inygon_twitch_bot
-## Bot that makes user online in selected Twitch livestreams.	
-### Instructions:
-	- Install node.js: https://nodejs.org/en/
-	- Open terminal in folder
-	- run command: npm install
-	- get the oauth here: https://twitchapps.com/tmi/
-	- Create .env file with:
-		TWITCH_USERNAME = 
-		TWITCH_CHANNELS = ["inygontv1", "inygontv2", "inygontv3"]
-		TWITCH_OAUTH_TOKEN = 
-		TWITCH_PASSWORD =
-	- run with the command: npm start
+Twtich Bot that makes user online in selected livestreams.
 
-	NOTE: CTRL + C to Stop
-	
-	
+## Set up instruction:
+
+- Install node.js: https://nodejs.org/en/
+- Open terminal in folder
+- Run command: npm install
+
+Fill .env file with the following:
+
+    TWITCH_USERNAME: Your twitch username
+    TWITCH_CHANNELS: List of twitch channels in JSON (defaults to all 3 inygon channels)
+    TWITCH_OAUTH_TOKEN: Your twitch oauth token (https://twitchapps.com/tmi/)
+    TWITCH_PASSWORD: Your twitch password
+    NOTIFY: Whether you want OS notifications when inygon channels go online (true or false)
+
+- run with the command: npm start
+
+## Running instructions:
+
+- Open terminal in folder
+- Run with the command: npm start
+    
+    NOTE: CTRL + C to Stop
