@@ -6,24 +6,60 @@ const notifier = require('node-notifier');
 
 require('dotenv').config();
 
-console.log('username: ' + process.env.TWITCH_USERNAME);
-console.log('channels: ' + JSON.stringify(JSON.parse(process.env.TWITCH_CHANNELS), ' ', 0));
-// console.log(process.env.TWITCH_OAUTH_TOKEN);
-
-
 let loggedIn = false;
 let browser;
 let page;
 let date = new Date();
 
-var prevCoins = 0;
-var isLive = false
+let prevCoins = 0;
+let isLive = false
 initialRun = true;
 
 // Twitch client
 let client;
 
 function joinTwitch() {
+    
+    let failed = false;
+    let channels;
+
+    if (process.env.TWITCH_USERNAME === undefined || process.env.TWITCH_USERNAME === "") {
+        failed = true;
+        console.log("Twitch username missing in .env!");
+    }
+    
+    if (process.env.TWITCH_OAUTH_TOKEN === undefined || process.env.TWITCH_OAUTH_TOKEN === "") {
+        failed = true;
+        console.log("Twitch OAuth token missing in .env!");
+    }
+
+    if (process.env.TWITCH_PASSWORD === undefined || process.env.TWITCH_PASSWORD === "") {
+        failed = true;
+        console.log("Twitch password missing in .env!");
+    }
+
+    if (process.env.TWITCH_CHANNELS === undefined || process.env.TWITCH_CHANNELS === "") {
+        failed = true;
+        console.log("Twitch channels missing in .env!");
+    }
+    else {
+        try {
+            channels = JSON.parse(process.env.TWITCH_CHANNELS);
+        }
+        catch (exception) {
+            failed = true;
+            console.log("Failed to parse twitch channel to from JSON!");
+        }
+    }
+
+    if (failed) {
+        console.log("\nError occured, exiting...");
+        return;
+    }
+
+    console.log('username: ' + process.env.TWITCH_USERNAME);
+    console.log('channels: ' + JSON.stringify(channels, ' ', 0));
+
     client = new tmi.Client({
         options: { debug: false  },
         connection: {
@@ -34,7 +70,7 @@ function joinTwitch() {
             username: process.env.TWITCH_USERNAME,
             password: process.env.TWITCH_OAUTH_TOKEN
         },
-        channels: JSON.parse(process.env.TWITCH_CHANNELS)
+        channels: channels
     });
     
     client.connect().catch(console.error);
@@ -45,6 +81,8 @@ function joinTwitch() {
         //     client.say(channel, `@${tags.username}, heya!`);
         // }
     });
+
+    runBrowser();
 }
 
 async function runBrowser() {
@@ -214,7 +252,6 @@ function sleep(ms) {
 
 function main() {
     joinTwitch();
-    runBrowser();
 }
 
 main();
